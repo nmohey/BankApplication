@@ -1,7 +1,7 @@
 package com.sprints.BankApplication.controller;
 
 import com.sprints.BankApplication.dto.BankAccountDto;
-import com.sprints.BankApplication.model.BankAccount;
+import com.sprints.BankApplication.dto.TransferRequestDto;
 import com.sprints.BankApplication.service.BankAccountService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/accounts")
 public class BankAccountController {
     private final BankAccountService bankAccountService;
 
@@ -27,9 +27,12 @@ public class BankAccountController {
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // Get all accounts
+    // Get all accounts with optional minBalance filter
     @GetMapping
-    public ResponseEntity<List<BankAccountDto>> getAllAccounts() {
+    public ResponseEntity<List<BankAccountDto>> getAllAccounts(@RequestParam(required = false) BigDecimal minBalance) {
+        if (minBalance != null) {
+            return ResponseEntity.ok(bankAccountService.findByBalanceGreaterThan(minBalance));
+        }
         return ResponseEntity.ok(bankAccountService.getAllBankAccounts());
     }
 
@@ -76,10 +79,12 @@ public class BankAccountController {
 
     // Transfer money between accounts
     @PostMapping("/transfer")
-    public ResponseEntity<String> transfer(@RequestParam Long senderId,
-                                           @RequestParam Long receiverId,
-                                           @RequestParam BigDecimal amount) {
-        String result = bankAccountService.transferMoney(senderId, receiverId, amount);
+    public ResponseEntity<String> transfer(@Valid @RequestBody TransferRequestDto transferRequest) {
+        String result = bankAccountService.transferMoney(
+            transferRequest.getSenderAccountId(), 
+            transferRequest.getReceiverAccountId(), 
+            transferRequest.getAmount()
+        );
         return ResponseEntity.ok(result);
     }
 
@@ -88,5 +93,32 @@ public class BankAccountController {
     public ResponseEntity<Void> updateBalance(@PathVariable Long id, @RequestParam Double newBalance) {
         bankAccountService.changeAccountBalance(id, newBalance);
         return ResponseEntity.noContent().build();
+    }
+
+    // Deposit money to account
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<String> deposit(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        BankAccountDto account = bankAccountService.getBankAccountById(id);
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+        BigDecimal newBalance = account.getBalance().add(amount);
+        bankAccountService.changeAccountBalance(id, newBalance.doubleValue());
+        return ResponseEntity.ok("Deposit successful");
+    }
+
+    // Withdraw money from account
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<String> withdraw(@PathVariable Long id, @RequestParam BigDecimal amount) {
+        BankAccountDto account = bankAccountService.getBankAccountById(id);
+        if (account == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (account.getBalance().compareTo(amount) < 0) {
+            return ResponseEntity.badRequest().body("Insufficient balance");
+        }
+        BigDecimal newBalance = account.getBalance().subtract(amount);
+        bankAccountService.changeAccountBalance(id, newBalance.doubleValue());
+        return ResponseEntity.ok("Withdrawal successful");
     }
 }
