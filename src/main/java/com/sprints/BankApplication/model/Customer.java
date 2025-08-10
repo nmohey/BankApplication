@@ -1,6 +1,9 @@
 package com.sprints.BankApplication.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
@@ -12,9 +15,14 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
     @Column(unique = true)
+    @Email(message = "Email should be valid")
+    @NotBlank(message = "Email is required")
     private String email;
+    @Size(max = 20, message = "Phone must not exceed 20 characters")
     private String phone;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
