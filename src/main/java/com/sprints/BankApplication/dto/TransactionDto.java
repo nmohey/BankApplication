@@ -1,12 +1,23 @@
 package com.sprints.BankApplication.dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
 
 public class TransactionDto {
 
+    @NotBlank(message = "Transaction type is required")
+    @Size(max = 50, message = "Transaction type must not exceed 50 characters")
     private String type;
+    @NotNull(message = "Amount is required")
+    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
+    @NotNull(message = "Customer ID is required")
     private Long customer_id;
+    @NotNull(message = "Account ID is required")
     private Long account_id;
 
     public TransactionDto() {

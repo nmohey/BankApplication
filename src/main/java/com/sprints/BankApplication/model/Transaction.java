@@ -1,6 +1,10 @@
 package com.sprints.BankApplication.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -12,8 +16,12 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
+    @NotBlank(message = "Transaction type is required")
+    @Size(max = 50, message = "Transaction type must not exceed 50 characters")
     private String type;
     @Column(nullable = false)
+    @NotNull(message = "Amount is required")
+    @DecimalMin(value = "0.01", message = "Amount must be greater than 0")
     private BigDecimal amount;
 
     @ManyToOne
@@ -21,7 +29,7 @@ public class Transaction {
     private Customer customer;
 
     @ManyToOne
-    @JoinColumn(name = "bank_id")
+    @JoinColumn(name = "account_id")
     private BankAccount account;
 
     public Transaction() {

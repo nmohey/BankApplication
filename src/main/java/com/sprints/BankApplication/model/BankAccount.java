@@ -1,6 +1,10 @@
 package com.sprints.BankApplication.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -13,9 +17,15 @@ public class BankAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false, unique = true)
+    @NotBlank(message = "Account number is required")
+    @Size(max = 20, message = "Account number must not exceed 20 characters")
     private String accountNumber;
     @Column(nullable = false)
+    @NotBlank(message = "Account type is required")
+    @Size(max = 50, message = "Account type must not exceed 50 characters")
     private String accountType;
+    @NotNull(message = "Balance is required")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Balance must be non-negative")
     private BigDecimal balance;
 
     @ManyToOne
