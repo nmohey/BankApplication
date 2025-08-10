@@ -128,5 +128,7 @@ public class BankAccountService {
         return "Transfer successful";
     }
 
-
+    public void changeAccountBalance(Long accountId, Double newBalance) {
+        bankAccountRepository.updateBalance(accountId, newBalance);
+    }
 }

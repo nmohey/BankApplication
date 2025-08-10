@@ -90,5 +90,9 @@ public class TransactionService {
         transactionRepository.deleteById(id);
     }
 
+    public void deleteTransactionsByAccount(Long accountId) {
+        transactionRepository.deleteByAccountId(accountId);
+    }
+
 
 }
